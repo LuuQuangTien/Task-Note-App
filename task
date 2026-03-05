@@ -1,0 +1,13 @@
+_______________Ver-1__________________
+> splash screen                              (X)
+> Main activity                              ()
+    > catagory có thể thêm/xóa/sửa               (X)
+    > các nhiệm vụ có thể thêm/xóa/sửa           (X)
+    > nhiệm vụ có thể chọn ngày, thời gian       (X)
+    > sắp xếp theo thời gian                     ()
+
+_______________Ver-2__________________
+> service                                    ()
+
+_______________Ver-3__________________
+> notification                               ()

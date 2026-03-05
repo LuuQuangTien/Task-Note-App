@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="colorPrimary">#4B7BEC</color>
+    <color name="colorPrimaryDark">#3867D6</color>
+    <color name="colorAccent">#4B7BEC</color>
+
+    <color name="colorBackground">#FF000000</color>
+    <color name="colorSurface">#FF000000</color>
+    <color name="colorToolbar">#FF000000</color>
+
+    <color name="drawerBackground">#FF1A1A1A</color>
+    <color name="drawerItemText">#FFCCCCCC</color>
+    <color name="drawerDivider">#FF333333</color>
+
+    <color name="textPrimary">#FFFFFFFF</color>
+    <color name="textSecondary">#FF888888</color>
+
+    <color name="bottomNavBackground">#FF111111</color>
+    <color name="bottomNavActive">#4B7BEC</color>
+    <color name="bottomNavInactive">#FF666666</color>
+
+    <color name="fabColor">#4B7BEC</color>
+    <color name="fabIconColor">#FFFFFFFF</color>
+    <color name="badgeBlue">#4B7BEC</color>
+</resources>
