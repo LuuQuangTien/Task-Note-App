@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rvDrawerCategories;
     private DrawerCategoryAdapter drawerAdapter;
+    private TaskExpandableListAdapter taskAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,19 +216,23 @@ public class MainActivity extends AppCompatActivity {
 
         emptyState.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
         expandableListView.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
-        expandableListView.setAdapter(new TaskExpandableListAdapter(this, groupList, taskMap,
+        taskAdapter = new TaskExpandableListAdapter(this, groupList, taskMap,
                 new TaskExpandableListAdapter.OnTaskActionListener() {
                     @Override
                     public void onTaskCheckedChanged(TaskEntity task, boolean isChecked) {
                         task.setCompleted(isChecked);
                         taskDao.update(task);
+
+                        taskAdapter.sortAllTasks();
                     }
 
                     @Override
                     public void onTaskLongClick(TaskEntity task) {
                         TaskDialogHelper.showEditDialog(MainActivity.this, task, taskDao, categoryDao, MainActivity.this::refreshAll);
                     }
-                }));
+                });
+        expandableListView.setAdapter(taskAdapter);
+        taskAdapter.sortAllTasks();
 
         for (int i = 0; i < groupList.size(); i++) {
             expandableListView.expandGroup(i);

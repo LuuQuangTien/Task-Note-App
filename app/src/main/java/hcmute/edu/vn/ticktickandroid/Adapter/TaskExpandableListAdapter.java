@@ -7,7 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
+import java.util.Collections;
+import java.util.Comparator;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,6 +43,14 @@ public class TaskExpandableListAdapter extends BaseExpandableListAdapter {
         this.groupList = groupList;
         this.taskMap = taskMap;
         this.listener = listener;
+
+        // sort task theo thời gian
+        for (String key : taskMap.keySet()) {
+            List<TaskEntity> tasks = taskMap.get(key);
+            if (tasks != null) {
+                sortTasksByDueDate(tasks);
+            }
+        }
     }
 
     @Override
@@ -109,6 +120,13 @@ public class TaskExpandableListAdapter extends BaseExpandableListAdapter {
         CheckBox checkBox = convertView.findViewById(R.id.cb_task);
         TextView tvTitle = convertView.findViewById(R.id.tv_task_title);
         TextView tvDue = convertView.findViewById(R.id.tv_task_due);
+        ImageView btnEdit = convertView.findViewById(R.id.btn_edit_task);
+
+        btnEdit.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onTaskLongClick(task);
+            }
+        });
 
         tvTitle.setText(task.getTitle());
         checkBox.setOnCheckedChangeListener(null);
@@ -135,19 +153,39 @@ public class TaskExpandableListAdapter extends BaseExpandableListAdapter {
             }
         });
 
-        convertView.setOnLongClickListener(v -> {
-            if (listener != null) {
-                listener.onTaskLongClick(task);
-            }
-            return true;
-        });
-
         return convertView;
     }
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
+    }
+    private void sortTasksByDueDate(List<TaskEntity> tasks) {
+        Collections.sort(tasks, new Comparator<TaskEntity>() {
+            @Override
+            public int compare(TaskEntity t1, TaskEntity t2) {
+
+                long d1 = t1.getDueDate();
+                long d2 = t2.getDueDate();
+
+                // task không có deadline đưa xuống cuối
+                if (d1 == 0 && d2 == 0) return 0;
+                if (d1 == 0) return 1;
+                if (d2 == 0) return -1;
+
+                return Long.compare(d1, d2);
+            }
+        });
+    }
+
+    public void sortAllTasks() {
+        for (String key : taskMap.keySet()) {
+            List<TaskEntity> tasks = taskMap.get(key);
+            if (tasks != null) {
+                sortTasksByDueDate(tasks);
+            }
+        }
+        notifyDataSetChanged();
     }
 }
 
