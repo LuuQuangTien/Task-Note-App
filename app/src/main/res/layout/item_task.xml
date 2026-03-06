@@ -53,14 +53,5 @@
         android:contentDescription="Sửa"
         android:background="?attr/selectableItemBackgroundBorderless" />
 
-    <ImageView
-        android:id="@+id/btn_delete_task"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:padding="4dp"
-        android:src="@drawable/ic_delete"
-        android:contentDescription="Xóa"
-        android:background="?attr/selectableItemBackgroundBorderless" />
-
 </LinearLayout>
 
