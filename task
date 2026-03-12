@@ -1,6 +1,6 @@
 _______________Ver-1__________________
 > splash screen                              (X)
-> Main activity                              ()
+> Main activity                              (X)
     > catagory có thể thêm/xóa/sửa               (X)
     > các nhiệm vụ có thể thêm/xóa/sửa           (X)
     > nhiệm vụ có thể chọn ngày, thời gian       (X)
@@ -8,6 +8,11 @@ _______________Ver-1__________________
 
 _______________Ver-2__________________
 > service                                    ()
+    > file java
+    > service cho timer                      ()
+    > service cho deadline task              ()
+
+> content provider                           ()
 
 _______________Ver-3__________________
-> notification                               ()
+> notification/Broadcast recevier            ()

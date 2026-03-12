@@ -9,7 +9,7 @@
         android:icon="@drawable/ic_calendar"
         android:title="@string/nav_calendar" />
     <item
-        android:id="@+id/nav_focus"
-        android:icon="@drawable/ic_focus"
-        android:title="@string/nav_focus" />
+        android:id="@+id/nav_timer"
+        android:icon="@drawable/ic_timer"
+        android:title="@string/nav_timer" />
 </menu>

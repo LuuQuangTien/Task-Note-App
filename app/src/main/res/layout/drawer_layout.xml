@@ -3,7 +3,7 @@
     android:layout_width="300dp"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/drawerBackground"
+    android:background="@color/colorBackground"
     android:paddingTop="48dp">
 
     <androidx.recyclerview.widget.RecyclerView

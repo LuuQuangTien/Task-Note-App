@@ -15,7 +15,7 @@
     <!-- Bottom Nav -->
     <string name="nav_tasks">Nhiệm vụ</string>
     <string name="nav_calendar">Lịch</string>
-    <string name="nav_focus">Tập trung</string>
+    <string name="nav_timer">Timer</string>
 
     <!-- Drawer Items -->
     <string name="drawer_personal">Personal</string>

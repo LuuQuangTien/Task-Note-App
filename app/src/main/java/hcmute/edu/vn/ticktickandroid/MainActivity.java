@@ -33,6 +33,7 @@ import hcmute.edu.vn.ticktickandroid.Category.CategoryDao;
 import hcmute.edu.vn.ticktickandroid.Database.AppDatabase;
 import hcmute.edu.vn.ticktickandroid.Dialog.CategoryDialogHelper;
 import hcmute.edu.vn.ticktickandroid.Dialog.TaskDialogHelper;
+import hcmute.edu.vn.ticktickandroid.Fragment.TimerFragment;
 import hcmute.edu.vn.ticktickandroid.Task.TaskDao;
 import hcmute.edu.vn.ticktickandroid.Task.TaskEntity;
 
@@ -59,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     private DrawerCategoryAdapter drawerAdapter;
     private TaskExpandableListAdapter taskAdapter;
 
+    private TimerFragment timerFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +72,13 @@ public class MainActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
             return insets;
+        });
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNav, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), insets.bottom);
+            return windowInsets;
         });
 
         initDatabase();
@@ -115,11 +125,45 @@ public class MainActivity extends AppCompatActivity {
     private void setupBottomNav() {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            if (itemId == R.id.nav_tasks) return true;
-            else if (itemId == R.id.nav_calendar) return true;
-            else if (itemId == R.id.nav_focus) return true;
+            if (itemId == R.id.nav_tasks) {
+                showTasksUi();
+                return true;
+            } else if (itemId == R.id.nav_calendar) {
+                return true;
+            } else if (itemId == R.id.nav_timer) {
+                showTimerUi();
+                return true;
+            }
             return false;
         });
+    }
+
+    private void showTasksUi() {
+        boolean isEmpty = taskMap.isEmpty();
+        emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        expandableListView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        updateFabVisibility();
+
+        if (timerFragment != null) {
+            getSupportFragmentManager().beginTransaction().hide(timerFragment).commit();
+        }
+    }
+
+    private void showTimerUi() {
+        emptyState.setVisibility(View.GONE);
+        expandableListView.setVisibility(View.GONE);
+        fabAdd.hide();
+
+        if (timerFragment == null) {
+            timerFragment = new TimerFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, timerFragment)
+                    .commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .show(timerFragment)
+                    .commit();
+        }
     }
 
     private void setupDrawer() {
@@ -177,6 +221,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateFabVisibility() {
+        if (bottomNavigationView.getSelectedItemId() != R.id.nav_tasks) {
+            fabAdd.hide();
+            return;
+        }
+
         if (currentCategory == null) {
             fabAdd.hide();
         } else {
@@ -214,8 +263,10 @@ public class MainActivity extends AppCompatActivity {
             taskMap.get(catName).add(task);
         }
 
-        emptyState.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
-        expandableListView.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
+        if (bottomNavigationView.getSelectedItemId() == R.id.nav_tasks) {
+            emptyState.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
+            expandableListView.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
+        }
         taskAdapter = new TaskExpandableListAdapter(this, groupList, taskMap,
                 new TaskExpandableListAdapter.OnTaskActionListener() {
                     @Override
