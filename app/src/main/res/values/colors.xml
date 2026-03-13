@@ -3,26 +3,37 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="colorPrimary">#4B7BEC</color>
-    <color name="colorPrimaryDark">#3867D6</color>
-    <color name="colorAccent">#4B7BEC</color>
+    <!-- Modern Blue Palette -->
+    <color name="colorPrimary">#3B82F6</color>
+    <color name="colorPrimaryDark">#2563EB</color>
+    <color name="colorAccent">#60A5FA</color>
 
-    <color name="colorBackground">#FF000000</color>
-    <color name="colorSurface">#FF000000</color>
-    <color name="colorToolbar">#FF000000</color>
+    <!-- Backgrounds (Modern Dark) -->
+    <color name="colorBackground">#0F172A</color> <!-- Deep Navy Dark -->
+    <color name="colorSurface">#1E293B</color>    <!-- Lighter Surface -->
+    <color name="colorToolbar">#0F172A</color>
 
-    <color name="drawerBackground">#FF1A1A1A</color>
-    <color name="drawerItemText">#FFCCCCCC</color>
-    <color name="drawerDivider">#FF333333</color>
+    <!-- Drawer Colors -->
+    <color name="drawerBackground">#1E293B</color>
+    <color name="drawerItemText">#E2E8F0</color>
+    <color name="drawerDivider">#334155</color>
 
-    <color name="textPrimary">#FFFFFFFF</color>
-    <color name="textSecondary">#FF888888</color>
+    <!-- Text Colors -->
+    <color name="textPrimary">#F8FAFC</color>
+    <color name="textSecondary">#94A3B8</color>
 
-    <color name="bottomNavBackground">#FF111111</color>
-    <color name="bottomNavActive">#4B7BEC</color>
-    <color name="bottomNavInactive">#FF666666</color>
+    <!-- Bottom Nav -->
+    <color name="bottomNavBackground">#1E293B</color>
+    <color name="bottomNavActive">#3B82F6</color>
+    <color name="bottomNavInactive">#64748B</color>
 
-    <color name="fabColor">#4B7BEC</color>
-    <color name="fabIconColor">#FFFFFFFF</color>
-    <color name="badgeBlue">#4B7BEC</color>
+    <!-- FAB and Components -->
+    <color name="fabColor">#3B82F6</color>
+    <color name="fabIconColor">#FFFFFF</color>
+    <color name="badgeBlue">#3B82F6</color>
+
+    <!-- Priority/Status Colors -->
+    <color name="priorityHigh">#EF4444</color>
+    <color name="priorityMedium">#F59E0B</color>
+    <color name="priorityLow">#10B981</color>
 </resources>
