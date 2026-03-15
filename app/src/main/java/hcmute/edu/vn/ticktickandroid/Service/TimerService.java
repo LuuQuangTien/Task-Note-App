@@ -39,7 +39,6 @@ public class TimerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Keeps the service explicitly started and running in the background
         return START_STICKY;
     }
 

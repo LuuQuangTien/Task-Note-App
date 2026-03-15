@@ -168,7 +168,6 @@ public class TaskExpandableListAdapter extends BaseExpandableListAdapter {
                 long d1 = t1.getDueDate();
                 long d2 = t2.getDueDate();
 
-                // task không có deadline đưa xuống cuối
                 if (d1 == 0 && d2 == 0) return 0;
                 if (d1 == 0) return 1;
                 if (d2 == 0) return -1;

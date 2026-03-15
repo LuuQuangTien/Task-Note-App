@@ -6,44 +6,108 @@
     android:background="@color/colorBackground"
     android:paddingTop="48dp">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_drawer_categories"
+    <!-- Category section (visible on Task tab) -->
+    <LinearLayout
+        android:id="@+id/drawer_category_section"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:background="@color/drawerDivider" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_drawer_categories"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@color/drawerDivider" />
+
+        <LinearLayout
+            android:id="@+id/btn_add_category"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_add_circle_outline"
+                android:contentDescription="Thêm" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Thêm danh mục"
+                android:textColor="@color/drawerItemText"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/btn_add_category"
+        android:id="@+id/drawer_timer_section"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingBottom="8dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackground">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_add_circle_outline"
-            android:contentDescription="Thêm" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="Thêm danh mục"
-            android:textColor="@color/drawerItemText"
-            android:textSize="15sp" />
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:text="Chọn thời gian"
+            android:textColor="@color/textSecondary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_drawer_timer_presets"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:id="@+id/btn_add_timer"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_add_circle_outline"
+                android:contentDescription="Thêm" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Thêm thời gian"
+                android:textColor="@color/drawerItemText"
+                android:textSize="15sp" />
+        </LinearLayout>
     </LinearLayout>
+
 </LinearLayout>

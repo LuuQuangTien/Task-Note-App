@@ -95,9 +95,7 @@ public class TimerFragment extends Fragment {
     public void onStart() {
         super.onStart();
         Intent intent = new Intent(requireContext(), TimerService.class);
-        // Start the service so it keeps running even if we unbind
         requireActivity().startService(intent);
-        // Bind to get the interface
         requireActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -137,6 +135,16 @@ public class TimerFragment extends Fragment {
                     }
                 }
             });
+        }
+    }
+
+    public void setTimerDuration(long millis) {
+        if (isBound && timerService != null) {
+            timerService.pauseTimer();
+            timerService.setInitialTime(millis);
+            timerService.resetTimer();
+            updateTimerText(millis);
+            updateButtons();
         }
     }
 }

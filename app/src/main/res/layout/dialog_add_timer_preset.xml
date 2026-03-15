@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thêm thời gian"
+        android:textColor="@color/colorBackground"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="4dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_hour_up"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/arrow_up_float"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Tăng giờ"
+                android:scaleType="centerInside" />
+
+            <EditText
+                android:id="@+id/et_hour"
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:text="00"
+                android:textColor="@color/colorBackground"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="@android:color/transparent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="giờ"
+                android:textColor="@color/colorBackground"
+                android:textSize="12sp" />
+
+            <ImageButton
+                android:id="@+id/btn_hour_down"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/arrow_down_float"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Giảm giờ"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=":"
+            android:textColor="@color/textPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_minute_up"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/arrow_up_float"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Tăng phút"
+                android:scaleType="centerInside" />
+
+            <EditText
+                android:id="@+id/et_minute"
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:text="00"
+                android:textColor="@color/colorBackground"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="@android:color/transparent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="phút"
+                android:textColor="@color/colorBackground"
+                android:textSize="12sp" />
+
+            <ImageButton
+                android:id="@+id/btn_minute_down"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/arrow_down_float"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Giảm phút"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=":"
+            android:textColor="@color/textPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_second_up"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/arrow_up_float"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Tăng giây"
+                android:scaleType="centerInside" />
+
+            <EditText
+                android:id="@+id/et_second"
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:text="00"
+                android:textColor="@color/colorBackground"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="@android:color/transparent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="giây"
+                android:textColor="@color/colorBackground"
+                android:textSize="12sp" />
+
+            <ImageButton
+                android:id="@+id/btn_second_down"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/arrow_down_float"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Giảm giây"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -11,9 +11,14 @@ import android.os.Looper;
 
 import androidx.core.app.NotificationCompat;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import hcmute.edu.vn.ticktickandroid.Category.Category;
 import hcmute.edu.vn.ticktickandroid.Database.AppDatabase;
+import hcmute.edu.vn.ticktickandroid.Notification.NotificationDao;
+import hcmute.edu.vn.ticktickandroid.Notification.NotificationEntity;
 import hcmute.edu.vn.ticktickandroid.R;
 import hcmute.edu.vn.ticktickandroid.Task.TaskEntity;
 
@@ -22,7 +27,28 @@ public class TaskReminderService extends Service {
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable checkDeadlineRunnable;
-    private static final long CHECK_INTERVAL = 60 * 1000; // Kiểm tra mỗi phút
+    private static final long CHECK_INTERVAL = 30 * 1000;
+
+    private final Set<String> sentNotifications = new HashSet<>();
+
+    private OnNotificationListener notificationListener;
+
+    public interface OnNotificationListener {
+        void onNewNotification();
+    }
+
+    public void setNotificationListener(OnNotificationListener listener) {
+        this.notificationListener = listener;
+    }
+
+    private static final long ONE_DAY_MS = 24 * 60 * 60 * 1000L;
+    private static final long ONE_HOUR_MS = 60 * 60 * 1000L;
+    private static final long THIRTY_MIN_MS = 30 * 60 * 1000L;
+    private static final long ONE_MIN_MS = 60 * 1000L;
+
+    private static final long TOLERANCE_LARGE = 5 * 60 * 1000L;
+    private static final long TOLERANCE_SMALL = 60 * 1000L;
+    private static final long TOLERANCE_TINY = 30 * 1000L;
 
     public class LocalBinder extends Binder {
         public TaskReminderService getService() {
@@ -58,28 +84,77 @@ public class TaskReminderService extends Service {
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
             List<TaskEntity> tasks = db.taskDao().getAll();
-            long currentTime = System.currentTimeMillis();
-            long oneHourFromNow = currentTime + (60 * 60 * 1000);
+            List<Category> categories = db.categoryDao().getAll();
+            java.util.Map<Integer, String> catMap = new java.util.HashMap<>();
+            for (Category c : categories) {
+                catMap.put(c.getId(), c.getName());
+            }
+            long now = System.currentTimeMillis();
+            boolean hasNew = false;
 
             for (TaskEntity task : tasks) {
-                // Điều kiện: Chưa hoàn thành, deadline lớn hơn hiện tại và trong vòng 1 giờ tới
-                if (!task.isCompleted() && task.getDueDate() > currentTime && task.getDueDate() <= oneHourFromNow) {
-                    showNotification(task);
+                if (task.isCompleted() || task.getDueDate() <= 0 || task.getDueDate() <= now) {
+                    continue;
                 }
+
+                long timeLeft = task.getDueDate() - now;
+                String catName = catMap.getOrDefault(task.getCategoryId(), "Unknown");
+
+                if (checkInterval(db, task, catName, timeLeft, ONE_DAY_MS, TOLERANCE_LARGE, "1_day",
+                        "Còn 1 ngày")) {
+                    hasNew = true;
+                }
+                if (checkInterval(db, task, catName, timeLeft, ONE_HOUR_MS, TOLERANCE_SMALL, "1_hour",
+                        "Còn 1 giờ")) {
+                    hasNew = true;
+                }
+                if (checkInterval(db, task, catName, timeLeft, THIRTY_MIN_MS, TOLERANCE_SMALL, "30_min",
+                        "Còn 30 phút")) {
+                    hasNew = true;
+                }
+                if (checkInterval(db, task, catName, timeLeft, ONE_MIN_MS, TOLERANCE_TINY, "1_min",
+                        "Còn 1 phút")) {
+                    hasNew = true;
+                }
+            }
+
+            if (hasNew && notificationListener != null) {
+                new Handler(Looper.getMainLooper()).post(() -> notificationListener.onNewNotification());
             }
         }).start();
     }
 
-    private void showNotification(TaskEntity task) {
+    private boolean checkInterval(AppDatabase db, TaskEntity task, String categoryName, long timeLeft,
+                                   long intervalMs, long toleranceMs, String intervalKey, String message) {
+        String key = task.getId() + "_" + intervalKey;
+        if (sentNotifications.contains(key)) return false;
+
+        if (Math.abs(timeLeft - intervalMs) <= toleranceMs) {
+            sentNotifications.add(key);
+            showNotification(task, message);
+            saveNotificationToDb(db, task, categoryName, message);
+            return true;
+        }
+        return false;
+    }
+
+    private void showNotification(TaskEntity task, String message) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_check_circle) 
-                .setContentTitle("Sắp đến hạn: " + task.getTitle())
-                .setContentText("Task này sẽ hết hạn trong vòng chưa đầy 1 tiếng!")
+                .setSmallIcon(R.drawable.ic_notification_on)
+                .setContentTitle(task.getTitle())
+                .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
-        notificationManager.notify(task.getId(), builder.build());
+        int notifId = (task.getId() + "_" + message).hashCode();
+        notificationManager.notify(notifId, builder.build());
+    }
+
+    private void saveNotificationToDb(AppDatabase db, TaskEntity task, String categoryName, String message) {
+        NotificationDao dao = db.notificationDao();
+        NotificationEntity entity = new NotificationEntity(task.getId(), task.getTitle(), categoryName, message);
+        dao.insert(entity);
     }
 
     private void createNotificationChannel() {

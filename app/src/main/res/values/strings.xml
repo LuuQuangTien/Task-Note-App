@@ -7,6 +7,8 @@
     <string name="calendar_3d">3d</string>
     <string name="open_drawer">Mở menu</string>
     <string name="close_drawer">Đóng menu</string>
+    <string name="all_categories">Tất cả</string>
+    <string name="focus_timer">Focus Timer</string>
 
     <!-- Empty State -->
     <string name="no_tasks">Không có nhiệm vụ</string>
