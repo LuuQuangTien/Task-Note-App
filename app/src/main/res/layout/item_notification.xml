@@ -98,6 +98,15 @@
 
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/btn_delete_notification"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        android:src="@drawable/ic_delete"
+        android:contentDescription="Xóa"
+        android:background="?attr/selectableItemBackgroundBorderless" />
+
     <View
         android:id="@+id/dot_unread"
         android:layout_width="8dp"

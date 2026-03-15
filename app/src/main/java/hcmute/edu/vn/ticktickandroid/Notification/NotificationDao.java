@@ -1,6 +1,7 @@
 package hcmute.edu.vn.ticktickandroid.Notification;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
@@ -19,6 +20,9 @@ public interface NotificationDao {
 
     @Insert
     long insert(NotificationEntity notification);
+
+    @Delete
+    void delete(NotificationEntity notification);
 
     @Query("UPDATE notifications SET isRead = 1 WHERE id = :id")
     void markAsRead(int id);

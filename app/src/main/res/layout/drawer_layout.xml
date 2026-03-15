@@ -6,7 +6,6 @@
     android:background="@color/colorBackground"
     android:paddingTop="48dp">
 
-    <!-- Category section (visible on Task tab) -->
     <LinearLayout
         android:id="@+id/drawer_category_section"
         android:layout_width="match_parent"

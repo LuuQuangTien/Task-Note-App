@@ -3,6 +3,7 @@ package hcmute.edu.vn.ticktickandroid.Adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -42,6 +43,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.tvCategory.setText(notif.getCategoryName() != null ? notif.getCategoryName() : "—");
         holder.tvTask.setText(notif.getTaskTitle());
         holder.tvTimeLeft.setText(notif.getMessage());
+        holder.btnDelete.setOnClickListener(v -> {
+            notifications.remove(position);
+            notifyItemRemoved(position);});
+
 
         holder.dotUnread.setVisibility(notif.isRead() ? View.GONE : View.VISIBLE);
 
@@ -58,7 +63,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivIcon;
+        ImageView ivIcon, btnDelete;
         TextView tvCategory, tvTask, tvTimeLeft;
         View dotUnread;
 
@@ -69,6 +74,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             tvTask = itemView.findViewById(R.id.tv_notif_task);
             tvTimeLeft = itemView.findViewById(R.id.tv_notif_time_left);
             dotUnread = itemView.findViewById(R.id.dot_unread);
+            btnDelete = itemView.findViewById(R.id.btn_delete_notification);
         }
     }
 }
