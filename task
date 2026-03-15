@@ -10,8 +10,8 @@ _______________Ver-2__________________
 > service                                    ()
     > file java
     > service cho timer                      ()
-    > service cho deadline task              ()
-
+    > service cho deadline task              (X) Gửi thông báo (Notification) nếu phát hiện task chưa
+                                                 hoàn thành và có thời hạn (dueDate) trong vòng 1 giờ tới.
 > content provider                           ()
 
 _______________Ver-3__________________

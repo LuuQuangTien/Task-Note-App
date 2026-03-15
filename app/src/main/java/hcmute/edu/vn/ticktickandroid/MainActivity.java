@@ -1,15 +1,27 @@
 package hcmute.edu.vn.ticktickandroid;
 
+import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -34,6 +46,7 @@ import hcmute.edu.vn.ticktickandroid.Database.AppDatabase;
 import hcmute.edu.vn.ticktickandroid.Dialog.CategoryDialogHelper;
 import hcmute.edu.vn.ticktickandroid.Dialog.TaskDialogHelper;
 import hcmute.edu.vn.ticktickandroid.Fragment.TimerFragment;
+import hcmute.edu.vn.ticktickandroid.Service.TaskReminderService;
 import hcmute.edu.vn.ticktickandroid.Task.TaskDao;
 import hcmute.edu.vn.ticktickandroid.Task.TaskEntity;
 
@@ -62,6 +75,33 @@ public class MainActivity extends AppCompatActivity {
 
     private TimerFragment timerFragment;
 
+    // Bound Service variables
+    private TaskReminderService taskReminderService;
+    private boolean isBound = false;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, "Đã cấp quyền thông báo", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Ứng dụng cần quyền thông báo để nhắc nhở deadline", Toast.LENGTH_LONG).show();
+                }
+            });
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            TaskReminderService.LocalBinder binder = (TaskReminderService.LocalBinder) service;
+            taskReminderService = binder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isBound = false;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
             return windowInsets;
         });
 
+        checkNotificationPermission();
         initDatabase();
         bindViews();
         setupToolbar();
@@ -92,6 +133,28 @@ public class MainActivity extends AppCompatActivity {
 
         refreshTaskList();
         updateFabVisibility();
+
+        // Bind to TaskReminderService
+        Intent intent = new Intent(this, TaskReminderService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isBound) {
+            unbindService(serviceConnection);
+            isBound = false;
+        }
     }
 
     private void initDatabase() {
