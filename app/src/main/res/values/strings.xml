@@ -9,6 +9,7 @@
     <string name="close_drawer">Đóng menu</string>
     <string name="all_categories">Tất cả</string>
     <string name="focus_timer">Focus Timer</string>
+    <string name="back">Back</string>
 
     <!-- Empty State -->
     <string name="no_tasks">Không có nhiệm vụ</string>
