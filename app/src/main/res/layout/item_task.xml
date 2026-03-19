@@ -1,57 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="48dp"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:paddingStart="24dp"
-    android:paddingEnd="12dp"
-    android:paddingTop="6dp"
-    android:paddingBottom="6dp"
-    android:background="@color/colorBackground">
-
-    <CheckBox
-        android:id="@+id/cb_task"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:buttonTint="@color/textSecondary" />
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardBackgroundColor="@color/colorBackground"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:layout_marginStart="8dp">
+        android:minHeight="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
-        <TextView
-            android:id="@+id/tv_task_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/textPrimary"
-            android:textSize="15sp"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/tv_task_due"
+        <CheckBox
+            android:id="@+id/cb_task"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/textSecondary"
-            android:textSize="12sp"
-            android:layout_marginTop="2dp"
-            android:visibility="gone" />
+            android:buttonTint="@color/colorPrimary" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/tv_task_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textPrimary"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_task_due"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textSecondary"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btn_share_sms"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_share"
+            app:tint="@color/textSecondary"
+            android:contentDescription="Share SMS"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <ImageView
+            android:id="@+id/btn_edit_task"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_edit"
+            app:tint="@color/textSecondary"
+            android:contentDescription="Edit"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
     </LinearLayout>
-
-    <ImageView
-        android:id="@+id/btn_edit_task"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:padding="4dp"
-        android:layout_marginEnd="4dp"
-        android:src="@drawable/ic_edit"
-        android:contentDescription="Sửa"
-        android:background="?attr/selectableItemBackgroundBorderless" />
-
-</LinearLayout>
-
+</com.google.android.material.card.MaterialCardView>

@@ -5,18 +5,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,7 +20,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -43,20 +37,16 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import hcmute.edu.vn.ticktickandroid.Adapter.DrawerCategoryAdapter;
-import hcmute.edu.vn.ticktickandroid.Adapter.DrawerTimerPresetAdapter;
 import hcmute.edu.vn.ticktickandroid.Adapter.TaskExpandableListAdapter;
 import hcmute.edu.vn.ticktickandroid.Category.Category;
 import hcmute.edu.vn.ticktickandroid.Category.CategoryDao;
 import hcmute.edu.vn.ticktickandroid.Database.AppDatabase;
 import hcmute.edu.vn.ticktickandroid.Dialog.CategoryDialogHelper;
 import hcmute.edu.vn.ticktickandroid.Dialog.TaskDialogHelper;
-import hcmute.edu.vn.ticktickandroid.Fragment.NotificationFragment;
 import hcmute.edu.vn.ticktickandroid.Fragment.TimerFragment;
-import hcmute.edu.vn.ticktickandroid.Notification.NotificationDao;
 import hcmute.edu.vn.ticktickandroid.Service.TaskReminderService;
 import hcmute.edu.vn.ticktickandroid.Task.TaskDao;
 import hcmute.edu.vn.ticktickandroid.Task.TaskEntity;
@@ -71,8 +61,9 @@ public class MainActivity extends AppCompatActivity {
     private ExpandableListView expandableListView;
     private LinearLayout emptyState;
 
-    private LinearLayout drawerCategorySection;
-    private LinearLayout drawerTimerSection;
+    private LinearLayout layoutSelectionActions;
+    private LinearLayout layoutNormalActions;
+    private ImageButton btnMultiDelete, btnMultiShare, btnCancelSelection;
 
     private CategoryDao categoryDao;
     private TaskDao taskDao;
@@ -84,34 +75,21 @@ public class MainActivity extends AppCompatActivity {
     private Map<String, List<TaskEntity>> taskMap = new LinkedHashMap<>();
 
     private RecyclerView rvDrawerCategories;
-    private RecyclerView rvDrawerTimerPresets;
     private DrawerCategoryAdapter drawerAdapter;
-    private DrawerTimerPresetAdapter timerPresetAdapter;
     private TaskExpandableListAdapter taskAdapter;
 
     private TimerFragment timerFragment;
-    private NotificationFragment notificationFragment;
-    private boolean isNotificationPageVisible = false;
 
-    private ImageView ivNotificationIcon;
-    private TextView tvNotificationBadge;
-    private NotificationDao notificationDao;
-
-    private static final int[] DEFAULT_PRESETS_SECONDS = {5*60, 10*60, 15*60, 25*60, 30*60, 45*60, 60*60};
-    private static final int DEFAULT_SELECTED_INDEX = 4;
-    private static final String PREFS_NAME = "timer_presets";
-    private static final String PREFS_KEY = "presets";
-    private List<Integer> timerPresetList = new ArrayList<>();
-
+    // Bound Service variables
     private TaskReminderService taskReminderService;
     private boolean isBound = false;
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    Toast.makeText(this, "Đã cấp quyền thông báo", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Ứng dụng cần quyền thông báo để nhắc nhở deadline", Toast.LENGTH_LONG).show();
+    private final ActivityResultLauncher<String[]> requestPermissionsLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                Boolean contactsGranted = result.getOrDefault(Manifest.permission.READ_CONTACTS, false);
+                Boolean smsGranted = result.getOrDefault(Manifest.permission.SEND_SMS, false);
+                if (contactsGranted && smsGranted) {
+                    Toast.makeText(this, "Đã cấp quyền danh bạ và SMS", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -121,13 +99,9 @@ public class MainActivity extends AppCompatActivity {
             TaskReminderService.LocalBinder binder = (TaskReminderService.LocalBinder) service;
             taskReminderService = binder.getService();
             isBound = true;
-            taskReminderService.setNotificationListener(() -> updateNotificationBadge());
         }
-
         @Override
-        public void onServiceDisconnected(ComponentName name) {
-            isBound = false;
-        }
+        public void onServiceDisconnected(ComponentName name) { isBound = false; }
     };
 
     @Override
@@ -149,38 +123,70 @@ public class MainActivity extends AppCompatActivity {
             return windowInsets;
         });
 
-        checkNotificationPermission();
+        checkAndRequestPermissions();
         initDatabase();
         bindViews();
         setupToolbar();
         setupBottomNav();
         setupDrawer();
-        setupTimerPresets();
-        setupNotificationIcon();
+        setupMultiSelectActions();
 
         fabAdd.setOnClickListener(v ->
                 TaskDialogHelper.showAddDialog(this, taskDao, categoryDao, currentCategory, this::refreshAll));
 
         refreshTaskList();
         updateFabVisibility();
-        updateNotificationBadge();
 
         Intent intent = new Intent(this, TaskReminderService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateNotificationBadge();
+    private void setupMultiSelectActions() {
+        btnMultiDelete.setOnClickListener(v -> {
+            List<TaskEntity> selected = taskAdapter.getSelectedTasks();
+            if (selected.isEmpty()) return;
+            
+            for (TaskEntity task : selected) {
+                taskDao.delete(task);
+            }
+            taskAdapter.setSelectionMode(false);
+            refreshAll();
+            Toast.makeText(this, "Đã xóa " + selected.size() + " task", Toast.LENGTH_SHORT).show();
+        });
+
+        btnMultiShare.setOnClickListener(v -> {
+            List<TaskEntity> selected = taskAdapter.getSelectedTasks();
+            if (selected.isEmpty()) return;
+
+            StringBuilder content = new StringBuilder();
+            for (TaskEntity task : selected) {
+                content.append("- ").append(task.getTitle()).append("\n");
+            }
+            
+            Intent intent = new Intent(this, ContactActivity.class);
+            intent.putExtra("TASK_CONTENT", content.toString());
+            startActivity(intent);
+            taskAdapter.setSelectionMode(false);
+        });
+
+        btnCancelSelection.setOnClickListener(v -> taskAdapter.setSelectionMode(false));
     }
 
-    private void checkNotificationPermission() {
+    private void checkAndRequestPermissions() {
+        List<String> permissions = new ArrayList<>();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.READ_CONTACTS);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.SEND_SMS);
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
-                    PackageManager.PERMISSION_GRANTED) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.POST_NOTIFICATIONS);
             }
+        }
+        if (!permissions.isEmpty()) {
+            requestPermissionsLauncher.launch(permissions.toArray(new String[0]));
         }
     }
 
@@ -197,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
         AppDatabase db = AppDatabase.getInstance(this);
         categoryDao = db.categoryDao();
         taskDao = db.taskDao();
-        notificationDao = db.notificationDao();
     }
 
     private void bindViews() {
@@ -209,77 +214,11 @@ public class MainActivity extends AppCompatActivity {
         expandableListView = findViewById(R.id.expandable_task_list);
         emptyState = findViewById(R.id.empty_state);
 
-        drawerCategorySection = findViewById(R.id.drawer_category_section);
-        drawerTimerSection = findViewById(R.id.drawer_timer_section);
-
-        ivNotificationIcon = findViewById(R.id.iv_notification_icon);
-        tvNotificationBadge = findViewById(R.id.tv_notification_badge);
-    }
-
-    private void setupNotificationIcon() {
-        FrameLayout btnNotification = findViewById(R.id.btn_notification);
-        btnNotification.setOnClickListener(v -> toggleNotificationPage());
-    }
-
-    private void toggleNotificationPage() {
-        if (isNotificationPageVisible) {
-            hideNotificationPage();
-        } else {
-            showNotificationPage();
-        }
-    }
-
-    private void showNotificationPage() {
-        isNotificationPageVisible = true;
-
-        emptyState.setVisibility(View.GONE);
-        expandableListView.setVisibility(View.GONE);
-        fabAdd.hide();
-        if (timerFragment != null) {
-            getSupportFragmentManager().beginTransaction().hide(timerFragment).commit();
-        }
-
-        if (notificationFragment == null) {
-            notificationFragment = new NotificationFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, notificationFragment)
-                    .commit();
-        } else {
-            getSupportFragmentManager().beginTransaction()
-                    .show(notificationFragment)
-                    .commit();
-        }
-
-        toolbarTitle.setText("Thông báo");
-
-        notificationDao.markAllAsRead();
-        updateNotificationBadge();
-    }
-
-    private void hideNotificationPage() {
-        isNotificationPageVisible = false;
-        if (notificationFragment != null) {
-            getSupportFragmentManager().beginTransaction().hide(notificationFragment).commit();
-        }
-
-        int selectedId = bottomNavigationView.getSelectedItemId();
-        if (selectedId == R.id.nav_tasks) {
-            showTasksUi();
-        } else if (selectedId == R.id.nav_timer) {
-            showTimerUi();
-        }
-    }
-
-    private void updateNotificationBadge() {
-        int unreadCount = notificationDao.getUnreadCount();
-        if (unreadCount > 0) {
-            ivNotificationIcon.setImageResource(R.drawable.ic_notification_on);
-            tvNotificationBadge.setVisibility(View.VISIBLE);
-            tvNotificationBadge.setText(unreadCount > 99 ? "99+" : String.valueOf(unreadCount));
-        } else {
-            ivNotificationIcon.setImageResource(R.drawable.ic_notification_off);
-            tvNotificationBadge.setVisibility(View.GONE);
-        }
+        layoutSelectionActions = findViewById(R.id.layout_selection_actions);
+        layoutNormalActions = findViewById(R.id.layout_normal_actions);
+        btnMultiDelete = findViewById(R.id.btn_multi_delete);
+        btnMultiShare = findViewById(R.id.btn_multi_share);
+        btnCancelSelection = findViewById(R.id.btn_cancel_selection);
     }
 
     private void setupToolbar() {
@@ -311,37 +250,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showTasksUi() {
-        isNotificationPageVisible = false;
         boolean isEmpty = taskMap.isEmpty();
         emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         expandableListView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         updateFabVisibility();
 
-        drawerCategorySection.setVisibility(View.VISIBLE);
-        drawerTimerSection.setVisibility(View.GONE);
-        toolbarTitle.setText(currentCategory != null ? currentCategory.getName() : getString(R.string.welcome));
-
         if (timerFragment != null) {
             getSupportFragmentManager().beginTransaction().hide(timerFragment).commit();
-        }
-        if (notificationFragment != null) {
-            getSupportFragmentManager().beginTransaction().hide(notificationFragment).commit();
         }
     }
 
     private void showTimerUi() {
-        isNotificationPageVisible = false;
         emptyState.setVisibility(View.GONE);
         expandableListView.setVisibility(View.GONE);
         fabAdd.hide();
-
-        drawerCategorySection.setVisibility(View.GONE);
-        drawerTimerSection.setVisibility(View.VISIBLE);
-        toolbarTitle.setText(R.string.focus_timer);
-
-        if (notificationFragment != null) {
-            getSupportFragmentManager().beginTransaction().hide(notificationFragment).commit();
-        }
 
         if (timerFragment == null) {
             timerFragment = new TimerFragment();
@@ -404,142 +326,6 @@ public class MainActivity extends AppCompatActivity {
         refreshDrawerCategories();
     }
 
-    private void setupTimerPresets() {
-        rvDrawerTimerPresets = findViewById(R.id.rv_drawer_timer_presets);
-        rvDrawerTimerPresets.setLayoutManager(new LinearLayoutManager(this));
-
-        timerPresetList = loadTimerPresets();
-
-        timerPresetAdapter = new DrawerTimerPresetAdapter(timerPresetList, DEFAULT_SELECTED_INDEX, totalSeconds -> {
-            if (timerFragment != null) {
-                timerFragment.setTimerDuration(totalSeconds * 1000L);
-            }
-            drawerLayout.closeDrawer(GravityCompat.START);
-        });
-
-        timerPresetAdapter.setOnPresetLongClickListener((position, totalSeconds) -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Xóa preset")
-                    .setMessage("Bạn có muốn xóa preset này?")
-                    .setPositiveButton("Xóa", (d, w) -> {
-                        timerPresetAdapter.removePreset(position);
-                        saveTimerPresets(timerPresetList);
-                    })
-                    .setNegativeButton("Hủy", null)
-                    .show();
-        });
-
-        rvDrawerTimerPresets.setAdapter(timerPresetAdapter);
-
-        LinearLayout btnAddTimer = findViewById(R.id.btn_add_timer);
-        if (btnAddTimer != null) {
-            btnAddTimer.setOnClickListener(v -> showAddTimerPresetDialog());
-        }
-    }
-
-    private void showAddTimerPresetDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_timer_preset, null);
-
-        EditText etHour = dialogView.findViewById(R.id.et_hour);
-        EditText etMinute = dialogView.findViewById(R.id.et_minute);
-        EditText etSecond = dialogView.findViewById(R.id.et_second);
-
-        ImageButton btnHourUp = dialogView.findViewById(R.id.btn_hour_up);
-        ImageButton btnHourDown = dialogView.findViewById(R.id.btn_hour_down);
-        ImageButton btnMinuteUp = dialogView.findViewById(R.id.btn_minute_up);
-        ImageButton btnMinuteDown = dialogView.findViewById(R.id.btn_minute_down);
-        ImageButton btnSecondUp = dialogView.findViewById(R.id.btn_second_up);
-        ImageButton btnSecondDown = dialogView.findViewById(R.id.btn_second_down);
-
-        btnHourUp.setOnClickListener(v -> {
-            int val = parseIntSafe(etHour.getText().toString());
-            etHour.setText(String.format(Locale.getDefault(), "%02d", Math.min(val + 1, 23)));
-        });
-        btnHourDown.setOnClickListener(v -> {
-            int val = parseIntSafe(etHour.getText().toString());
-            etHour.setText(String.format(Locale.getDefault(), "%02d", Math.max(val - 1, 0)));
-        });
-        btnMinuteUp.setOnClickListener(v -> {
-            int val = parseIntSafe(etMinute.getText().toString());
-            etMinute.setText(String.format(Locale.getDefault(), "%02d", Math.min(val + 1, 59)));
-        });
-        btnMinuteDown.setOnClickListener(v -> {
-            int val = parseIntSafe(etMinute.getText().toString());
-            etMinute.setText(String.format(Locale.getDefault(), "%02d", Math.max(val - 1, 0)));
-        });
-        btnSecondUp.setOnClickListener(v -> {
-            int val = parseIntSafe(etSecond.getText().toString());
-            etSecond.setText(String.format(Locale.getDefault(), "%02d", Math.min(val + 1, 59)));
-        });
-        btnSecondDown.setOnClickListener(v -> {
-            int val = parseIntSafe(etSecond.getText().toString());
-            etSecond.setText(String.format(Locale.getDefault(), "%02d", Math.max(val - 1, 0)));
-        });
-
-        new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .setPositiveButton("Thêm", (dialog, which) -> {
-                    int hours = parseIntSafe(etHour.getText().toString());
-                    int minutes = parseIntSafe(etMinute.getText().toString());
-                    int seconds = parseIntSafe(etSecond.getText().toString());
-                    int totalSeconds = hours * 3600 + minutes * 60 + seconds;
-
-                    if (totalSeconds <= 0) {
-                        Toast.makeText(this, "Vui lòng nhập thời gian lớn hơn 0", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    if (timerPresetList.contains(totalSeconds)) {
-                        Toast.makeText(this, "Preset này đã tồn tại", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    timerPresetAdapter.addPreset(totalSeconds);
-                    saveTimerPresets(timerPresetList);
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    private int parseIntSafe(String text) {
-        try {
-            return Integer.parseInt(text.trim());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    private List<Integer> loadTimerPresets() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String saved = prefs.getString(PREFS_KEY, null);
-        List<Integer> list = new ArrayList<>();
-
-        if (saved == null || saved.isEmpty()) {
-            for (int s : DEFAULT_PRESETS_SECONDS) {
-                list.add(s);
-            }
-        } else {
-            for (String part : saved.split(",")) {
-                try {
-                    list.add(Integer.parseInt(part.trim()));
-                } catch (NumberFormatException ignored) {}
-            }
-        }
-        return list;
-    }
-
-    private void saveTimerPresets(List<Integer> presets) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < presets.size(); i++) {
-            if (i > 0) sb.append(",");
-            sb.append(presets.get(i));
-        }
-        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-                .edit()
-                .putString(PREFS_KEY, sb.toString())
-                .apply();
-    }
-
     private void refreshAll() {
         refreshDrawerCategories();
         refreshTaskList();
@@ -598,13 +384,27 @@ public class MainActivity extends AppCompatActivity {
                     public void onTaskCheckedChanged(TaskEntity task, boolean isChecked) {
                         task.setCompleted(isChecked);
                         taskDao.update(task);
-
                         taskAdapter.sortAllTasks();
                     }
 
                     @Override
                     public void onTaskLongClick(TaskEntity task) {
                         TaskDialogHelper.showEditDialog(MainActivity.this, task, taskDao, categoryDao, MainActivity.this::refreshAll);
+                    }
+
+                    @Override
+                    public void onSelectionModeChanged(boolean enabled) {
+                        if (enabled) {
+                            layoutSelectionActions.setVisibility(View.VISIBLE);
+                            layoutNormalActions.setVisibility(View.GONE);
+                            fabAdd.hide();
+                            toolbarTitle.setText("Đã chọn " + taskAdapter.getSelectedTasks().size());
+                        } else {
+                            layoutSelectionActions.setVisibility(View.GONE);
+                            layoutNormalActions.setVisibility(View.VISIBLE);
+                            updateFabVisibility();
+                            toolbarTitle.setText(currentCategory != null ? currentCategory.getName() : getString(R.string.welcome));
+                        }
                     }
                 });
         expandableListView.setAdapter(taskAdapter);
